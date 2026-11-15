@@ -13,10 +13,11 @@
     "tauri": "tauri",
     "app:dev": "tauri dev",
     "app:build": "tauri build",
-    "android:init": "tauri android init",
+    "android:init": "bash scripts/android.sh init",
     "android:icons": "node scripts/sync-android-icons.mjs",
-    "android:dev": "tauri android dev",
-    "android:build": "tauri android build"
+    "android:dev": "bash scripts/android.sh dev",
+    "android:debug": "bash scripts/android.sh debug",
+    "android:build": "bash scripts/android.sh release"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.4",
