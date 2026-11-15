@@ -22,6 +22,9 @@ export const platform: "android" | "ios" | "windows" | "macos" | "linux" =
 /** 移动端（安卓 / iOS）共用触屏界面 */
 export const isMobile = isAndroid || isIos;
 
+/** 是否运行在 Tauri 宿主中；纯浏览器（pnpm dev）没有原生 IPC，窗口 API 会同步抛错 */
+export const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+
 /** 自定义协议地址随平台不同（见 tauri `register_asynchronous_uri_scheme_protocol` 文档）：
  *  Windows / Android → `http://<scheme>.localhost`
  *  macOS / iOS / Linux → `<scheme>://localhost`

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useStore, type Tab } from "../store";
-import { APP_VERSION } from "../api";
+import { APP_VERSION, isTauri } from "../api";
 import { Avatar } from "./ui";
 import {
   IClose, IGrid, IGridF, IHome, IHomeF, IMinus, IMoon, IRestore, ISearch, ISettings, ISidebar,
   ISquare, ISun, ITrophy, IUser, IUserF, Logo,
 } from "../icons";
 
-const appWindow = () => getCurrentWindow();
+const appWindow = () => (isTauri ? getCurrentWindow() : null);
 
 export function DesktopTitleBar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { theme, setTheme, setTab, platform } = useStore();
@@ -17,20 +17,22 @@ export function DesktopTitleBar({ collapsed, onToggle }: { collapsed: boolean; o
   const [nativeFs, setNativeFs] = useState(false);
 
   useEffect(() => {
+    const win = appWindow();
+    if (!win) return undefined;
     let un: (() => void) | undefined;
     const sync = () => {
-      appWindow().isMaximized().then(setMaxed).catch(() => {});
-      appWindow().isFullscreen().then(setNativeFs).catch(() => {});
+      win.isMaximized().then(setMaxed).catch(() => {});
+      win.isFullscreen().then(setNativeFs).catch(() => {});
     };
     sync();
-    appWindow().onResized(sync)
+    win.onResized(sync)
       .then((f: () => void) => { un = f; }).catch(() => {});
     return () => { un?.(); };
   }, []);
 
   return (
     <header className={`win-titlebar ${nativeFs ? "is-native-fs" : ""}`} data-tauri-drag-region
-      onDoubleClick={(e) => { if (!(e.target as HTMLElement).closest("button")) appWindow().toggleMaximize().catch(() => {}); }}>
+      onDoubleClick={(e) => { if (!(e.target as HTMLElement).closest("button")) appWindow()?.toggleMaximize().catch(() => {}); }}>
       <div className="win-wordmark" data-tauri-drag-region>
         <Logo size={24} />
         <span>HG<span className="win-wordmark-light">hub</span></span>
@@ -48,11 +50,11 @@ export function DesktopTitleBar({ collapsed, onToggle }: { collapsed: boolean; o
       {/* macOS 用系统自带的红绿灯（titleBarStyle: Overlay），不画自绘按钮 */}
       {platform !== "macos" && (
         <div className="win-caption-buttons">
-          <button aria-label="最小化" onClick={() => appWindow().minimize().catch(() => {})}><IMinus size={15} strokeWidth={1.5} /></button>
-          <button aria-label={maxed ? "还原" : "最大化"} onClick={() => appWindow().toggleMaximize().catch(() => {})}>
+          <button aria-label="最小化" onClick={() => appWindow()?.minimize().catch(() => {})}><IMinus size={15} strokeWidth={1.5} /></button>
+          <button aria-label={maxed ? "还原" : "最大化"} onClick={() => appWindow()?.toggleMaximize().catch(() => {})}>
             {maxed ? <IRestore size={14} strokeWidth={1.5} /> : <ISquare size={14} strokeWidth={1.5} />}
           </button>
-          <button className="win-close" aria-label="关闭" onClick={() => appWindow().close().catch(() => {})}><IClose size={16} strokeWidth={1.5} /></button>
+          <button className="win-close" aria-label="关闭" onClick={() => appWindow()?.close().catch(() => {})}><IClose size={16} strokeWidth={1.5} /></button>
         </div>
       )}
     </header>
